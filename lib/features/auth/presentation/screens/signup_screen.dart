@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_api_26/features/auth/presentation/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,13 @@ class _SignupScreenState extends State<SignupScreen> {
           );
 
       if (userCredential.user != null) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+              'email': _emailController.text,
+              'name': _nameController.text,
+            });
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Signed up')));

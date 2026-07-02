@@ -5,13 +5,17 @@ class ProductCard extends StatelessWidget {
   final double price;
   final String description;
   final String? image;
+  final VoidCallback onAdd;
+  final String productId;
 
   const ProductCard({
     super.key,
+    required this.productId,
     required this.title,
     required this.price,
     required this.description,
     this.image,
+    required this.onAdd,
   });
 
   @override
@@ -108,16 +112,19 @@ class ProductCard extends StatelessWidget {
                         fontSize: 18,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 20,
+                    GestureDetector(
+                      onTap: onAdd,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],

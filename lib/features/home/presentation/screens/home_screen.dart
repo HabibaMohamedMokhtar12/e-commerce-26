@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_app_api_26/features/home/presentation/widgets/product_card.dart';
 
@@ -22,18 +23,37 @@ class _HomeScreenState extends State<HomeScreen> {
     productsReference = FirebaseFirestore.instance.collection("products");
   }
 
+  Future<void> addToCart(
+    String productId,
+    String title,
+    double price,
+    String description,
+    String? image,
+  ) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    CollectionReference cartReference = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('cart');
+    DocumentReference productReference = cartReference.doc(productId);
+    DocumentSnapshot productSnapshot = await productReference.get();
+
+    if (productSnapshot.exists) {
+      int quantity = productSnapshot['quantity'];
+      await productReference.update({'quantity': quantity + 1});
+    } else {
+      await productReference.set({
+        'name': title,
+        'description': description,
+        'price': price,
+        'image_url': image,
+        'quantity': 1,
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> dummyProducts = List.generate(
-      10,
-      (index) => {
-        'id': index,
-        'title': 'Product ${index + 1}',
-        'description': 'Modern design for daily life',
-        'price': (index + 1) * 20.0,
-        'image': 'https://via.placeholder.com/150',
-      },
-    );
     TextEditingController _nameController = TextEditingController(),
         _descriptionController = TextEditingController(),
         _priceController = TextEditingController(),
@@ -210,10 +230,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) {
                       final product = asyncSnapshot.data!.docs[index].data();
                       return ProductCard(
+                        productId: asyncSnapshot.data!.docs[index].id,
                         title: product['name'],
                         price: product['price'],
                         description: product['description'],
                         image: product['image_url'],
+                        onAdd: () {
+                          addToCart(
+                            asyncSnapshot.data!.docs[index].id,
+                            product['name'],
+                            product['price'],
+                            product['description'],
+                            product['image_url'],
+                          );
+                        },
                       );
                     },
                   );
